@@ -1,0 +1,6 @@
+General Bytecode Structure
+
+~
+a.ub.8 -> sequential 8 bit bytes are copied as indices.
+
+~
