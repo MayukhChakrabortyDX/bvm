@@ -1,0 +1,20 @@
+BasedOnStyle: LLVM
+
+# Indentation
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# Braces
+BreakBeforeBraces: Attach   # keeps braces on the same line for everything
+
+# Blocks & spacing
+AllowShortBlocksOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
+
+# Column & line length
+ColumnLimit: 120
+
+# Pointer/reference alignment
+PointerAlignment: Left
