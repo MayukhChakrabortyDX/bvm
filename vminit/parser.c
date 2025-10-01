@@ -27,8 +27,10 @@
     
 */
 
-uint64_t parse_bytecode(uint8_t* file_data) {
+//bytecode parser version v0
+uint64_t parse_bytecode_v0(uint8_t* file_data) {
 
     //parses the bytecode to produce valid instruction.
+    //already assumed that the version number is 0.
 
 }

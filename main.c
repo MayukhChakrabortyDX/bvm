@@ -1,13 +1,10 @@
-#include <stdint.h>
-#include <stdio.h>
-#include "vminit/frontend.c"
+#include "tools/show_help.c"
 
 int main(int argc, char** argv) {
 
     //our task is to prepare the fibre (thread basically).
     //to keep functions extremely simple and to the point.
-    start_program(argc, argv);
-
+    show_help();
     return 0;
 
 }
