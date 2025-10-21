@@ -1,5 +1,4 @@
-#pragma once
-#include <stdio.h>
+#include "show_help.h"
 
 void show_help() {
     printf("  ____  _ _      __      ____  __ \n"

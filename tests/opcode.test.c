@@ -1,7 +1,0 @@
-/*
-
-    Welcome to unit testing library of blissvm.
-    This file is responsible for testing each opcode
-    and their desired behaviour.
-
-*/

@@ -3,8 +3,22 @@
     or real depending on use case.
 */
 
+
+
 #pragma once
 #include <stdint.h>
+
+
+//ever since functions became first-class citizen, this is required.
+struct FunctionTable {
+    uint64_t address; //stores the address corresponding to in the instruction space.
+    struct BlockUnit *allocation_strategy; //predefined meta-data to identify the structure of local variable in the heap space
+};
+
+//useful for multi-threading (M:N Model)
+enum FibreStatus {
+    RUNNING, WAITING, TERMINATED
+};
 
 //this union saves a lot of time when operating on arithmetic -> literally a life saver.
 union RegisterStorage {
@@ -39,18 +53,45 @@ enum RegisterAccesor {
     RPC //the program counter itself.
 };
 
+struct CallStackItem {
+    uint64_t heap_ptr;
+    uint64_t return_ptr;
+};
+
 struct Fibre {
 
-    uint64_t *call_stack;
+    
+    struct CallStackItem **CallStack;
     uint8_t *heap;
 
     uint16_t call_stack_size;
     uint16_t call_stack_head; //points to the 'head', i.e current location
 
     uint64_t *instructions;
-    
+
+    struct MethodTable *table; //a fibre must know about this table before
     //stores information about allocations.
     struct BlockUnit *heap_metadata;
+    struct FunctionTable *function_table;
     union RegisterStorage registers[14];
+    enum FibreStatus status;
+
+};
+
+struct Fibre *fibre_factory(
+    uint16_t call_stack_size, 
+    struct CallStackItem **CallStack, 
+    uint8_t* heap, 
+    struct BlockUnit* heap_metadata, 
+    uint64_t* instructions,
+    struct MethodTable *table,
+    struct FunctionTable *function_table,
+    enum FibreStatus status
+);
+
+struct MethodTable {
+
+    void (*ptr)(struct Fibre*);
+    uint8_t is_loaded; //0 means yet to be loaded
 
 };
