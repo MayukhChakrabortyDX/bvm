@@ -23,16 +23,12 @@ enum FibreStatus {
 //this union saves a lot of time when operating on arithmetic -> literally a life saver.
 union RegisterStorage {
 
-    uint64_t u64; //ulong
     int64_t  i64; //long
-
-    uint32_t u32; //uint
+    uint64_t u64;
     int32_t  i32; //int
 
-    uint16_t u16; //ushort
-    int16_t  i16; //short
- 
-    uint8_t  u8; //ubyte
+    int16_t  i16; //shor
+
     int8_t   i8; //byte (also acts as char)
 
     float    f32; //float

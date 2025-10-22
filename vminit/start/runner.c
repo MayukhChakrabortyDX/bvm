@@ -53,8 +53,8 @@ void start_vm(struct VMArgs *args) {
     //but we also need to prepare the scheduler.
     struct Scheduler *pool = malloc(sizeof(struct Scheduler));
 
-    pool->previous_fibre = NULL;
-    pool->next_fibre = NULL;
+    pool->previous_fibre = pool; //self reference
+    pool->next_fibre = pool; //self reference
     pool->ptr = fibre_main;
     
     //run multiple fibres in a single thread, or use M:N model too.

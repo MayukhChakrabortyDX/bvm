@@ -1,2 +1,2 @@
--std=c11
+-std=c17
 -Iinclude

@@ -1,16 +1,17 @@
 #pragma once
+#include "types.h"
 
 enum OPCODES {
 
     //this is bliss vm assembly or ISA.
     //general purpose arithmetic operation
     //OP_ADD TYPE (check the types.h for all the type ENUMs)
-    OP_ADD, OP_SUB, OP_MUL, OP_DIV,
+
+    TYPES(ADD), TYPES(SUB), TYPES(MUL), TYPES(DIV),
 
     //resizes the value in R1. stores the resized value in ROUT
     //Note: resizing will cause bit loss.
-    OP_iRESIZE_8, OP_iRESIZE_16, OP_iRESIZE_32, 
-    OP_uRESIZE_8, OP_uRESIZE_16, OP_uRESIZE_32,
+    OP_iRESIZE_8, OP_iRESIZE_16, OP_iRESIZE_32,
 
     //convert (literally) bits from integers and float, vice versa
     //and long with double and vice versa.
@@ -28,7 +29,7 @@ enum OPCODES {
     //if true -> goes to the immediate next instruction, which is always a jump instruction
     //if false, skips the immediate next instruction.
     //again, equality operators OPS TYPE (check types.h for detailed type description.)
-    OP_EQ, OP_NEQ, OP_LTEQ, OP_LE,
+    TYPES(EQ), TYPES(NEQ), TYPES(LTEQ), TYPES(LE),
 
     //static move between registers, address dependent but easily encodable below
     OP_MOV, OP_CLEAR,
