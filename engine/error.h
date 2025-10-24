@@ -23,14 +23,18 @@
 
 */
 
-enum FLAGS {
-
-    FLAG_ERROR
-
-};
-
 enum ERRORS {
 
-    DIV_BY_ZERO //ofc. not allowed lol
+    DIV_BY_ZERO, //ofc. not allowed lol
+    INVALID_FREE,
+    HEAP_MEMORY_FULL,
+
+    STORE_INVALID_REGISTER,
+    STORE_INVALID_HEAP_ADDRESS,
+
+    LOAD_INVALID_HEAP_ADDRESS,
+
+    REGLOAD_INVALID_REGISTER,
+    REGLOAD_INVALID_HEAP_ADDRESS
 
 };

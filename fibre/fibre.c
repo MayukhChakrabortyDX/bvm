@@ -1,4 +1,5 @@
 #include "fibre.h"
+#include <stdint.h>
 #include <stdlib.h>
 
 /*
@@ -9,32 +10,18 @@
     to manage all threads and execution engine itself.
 */
 
-struct Fibre *fibre_factory(
-    uint16_t call_stack_size, 
-    struct CallStackItem **CallStack, 
-    uint8_t* heap, 
-    struct BlockUnit* heap_metadata, 
-    uint64_t* instructions,
-    struct MethodTable *table,
-    struct FunctionTable *function_table,
-    enum FibreStatus status
+//NOTE: Moves Ownership! MUST be used to create new stuff.
+Fibre *__new_fibre__() {
 
-) {
-
-    struct Fibre *fibre = (struct Fibre*)malloc(sizeof(struct Fibre));
-
-    fibre->call_stack_head=0;
-    fibre->CallStack = CallStack;
-    fibre->call_stack_size = call_stack_size;
-    
-    fibre->heap = heap;
-    fibre->heap_metadata = heap_metadata;
-    fibre->table = table;
-    fibre->function_table = function_table;
-    fibre->status = status;
-
-    fibre->instructions = instructions;
-    
+    Fibre* fibre = (Fibre *) malloc( sizeof(Fibre) );
+    fibre->registers = ( RegisterStorage* ) malloc( sizeof( RegisterStorage ) * 14 );
     return fibre;
+
+}
+
+void __drop_fibre__(Fibre *fibre) {
+
+    free(fibre->registers);
+    free(fibre);
 
 }

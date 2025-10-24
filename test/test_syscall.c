@@ -11,7 +11,7 @@
 int main() {
 
     static char *syscall_registry[MAX_REGISTRY_SIZE] = { "./println_dev.so" };
-    struct MethodTable table[MAX_REGISTRY_SIZE] = {{ NULL, 0 }};
+    MethodTable table[MAX_REGISTRY_SIZE] = { NULL };
     struct BlockUnit *unit = BlockUnit_factory(50*1024*1024, 0, 0, 0);
 
     //now let's create a hello world block.
@@ -34,10 +34,8 @@ int main() {
         OP_PROGRAM_END
     };
 
-    uint64_t call_stack_size = 65536;
-
     struct VMArgs args = {
-        instructions, 12,1,block,table,NULL
+        instructions, 20,1,block,table
     };
 
     start_vm(&args);

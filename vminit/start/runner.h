@@ -9,6 +9,7 @@
 */
 
 #include <stdint.h>
+#include "../../fibre/fibre.h"
 
 struct VMArgs {
 
@@ -21,10 +22,8 @@ struct VMArgs {
     //it simply means: the min heap size can be multiplied till N times
     //easy for dumb allocator to allocate in chunks that are multiples of min_heap_size
     uint32_t heap_capacity_multipler;
-
     struct ConstantBlock *constantTable;
-    struct MethodTable *methodTable;
-    struct FunctionTable *function_table;
+    MethodTable *methodTable;
 
 };
 

@@ -1,5 +1,4 @@
 #include "runner.h"
-#include "../../fibre/fibre.h"
 #include "../../memory/heap.h"
 #include "../../memory/constants.h"
 #include "../../engine/engine.h"
@@ -11,7 +10,6 @@ void start_vm(struct VMArgs *args) {
 
     //owner, always the owner.
     uint8_t *heap = (uint8_t *)malloc( args->min_heap_size );
-    struct CallStackItem **call_stack = malloc(sizeof(struct CallStackItem) * 64);
 
     struct BlockUnit *metadata = 
         BlockUnit_factory(
@@ -38,18 +36,7 @@ void start_vm(struct VMArgs *args) {
 
     }
 
-    struct Fibre *fibre_main = 
-        fibre_factory(
-            64, 
-            call_stack, 
-            heap, 
-            metadata, 
-            args->instructions, 
-            args->methodTable, 
-            args->function_table,
-            RUNNING //defaults to running. No assuption here. (only syscall changes the program to waiting)
-        );
-
+    struct Fibre *fibre_main = __new_fibre__();
     //but we also need to prepare the scheduler.
     struct Scheduler *pool = malloc(sizeof(struct Scheduler));
 
@@ -58,6 +45,6 @@ void start_vm(struct VMArgs *args) {
     pool->ptr = fibre_main;
     
     //run multiple fibres in a single thread, or use M:N model too.
-    schedule_fibres(pool);
+    schedule_fibres(pool, args->instructions, heap, metadata, args->methodTable);
 
 }

@@ -3,38 +3,28 @@
     or real depending on use case.
 */
 
-
-
 #pragma once
 #include <stdint.h>
-
-
-//ever since functions became first-class citizen, this is required.
-struct FunctionTable {
-    uint64_t address; //stores the address corresponding to in the instruction space.
-    struct BlockUnit *allocation_strategy; //predefined meta-data to identify the structure of local variable in the heap space
-};
 
 //useful for multi-threading (M:N Model)
 enum FibreStatus {
     RUNNING, WAITING, TERMINATED
-};
+}; typedef enum FibreStatus FibreStatus;
 
 //this union saves a lot of time when operating on arithmetic -> literally a life saver.
 union RegisterStorage {
 
     int64_t  i64; //long
     uint64_t u64;
+
     int32_t  i32; //int
-
     int16_t  i16; //shor
-
     int8_t   i8; //byte (also acts as char)
 
     float    f32; //float
     double   d64; //double
 
-};
+}; typedef union RegisterStorage RegisterStorage;
 
 /*
     The first version had registers as struct -> but encoding/decoding was two step
@@ -49,45 +39,18 @@ enum RegisterAccesor {
     RPC //the program counter itself.
 };
 
-struct CallStackItem {
-    uint64_t heap_ptr;
-    uint64_t return_ptr;
-};
-
 struct Fibre {
 
-    
-    struct CallStackItem **CallStack;
-    uint8_t *heap;
-
-    uint16_t call_stack_size;
-    uint16_t call_stack_head; //points to the 'head', i.e current location
-
-    uint64_t *instructions;
-
-    struct MethodTable *table; //a fibre must know about this table before
-    //stores information about allocations.
-    struct BlockUnit *heap_metadata;
-    struct FunctionTable *function_table;
-    union RegisterStorage registers[14];
-    enum FibreStatus status;
+    //?: Intentional, Must be pointers of frames. Maximum of 1 MiB here.
+    RegisterStorage *registers;
+    FibreStatus status;
 
 };
 
-struct Fibre *fibre_factory(
-    uint16_t call_stack_size, 
-    struct CallStackItem **CallStack, 
-    uint8_t* heap, 
-    struct BlockUnit* heap_metadata, 
-    uint64_t* instructions,
-    struct MethodTable *table,
-    struct FunctionTable *function_table,
-    enum FibreStatus status
-);
+typedef struct Fibre Fibre;
+Fibre *__new_fibre__();
+void __drop_fibre__(Fibre *fibre);
 
-struct MethodTable {
-
-    void (*ptr)(struct Fibre*);
-    uint8_t is_loaded; //0 means yet to be loaded
-
-};
+typedef void (*MethodTable)(struct Fibre*, uint8_t*);
+MethodTable *__new_method_table__();
+void __drop_method_table__(MethodTable *table);
