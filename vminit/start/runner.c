@@ -1,6 +1,5 @@
 #include "runner.h"
 #include "../../memory/heap.h"
-#include "../../memory/constants.h"
 #include "../../engine/engine.h"
 #include <stdint.h>
 #include <stdlib.h>
@@ -12,7 +11,7 @@ void start_vm(struct VMArgs *args) {
     uint8_t *heap = (uint8_t *)malloc( args->min_heap_size );
 
     struct BlockUnit *metadata = 
-        BlockUnit_factory(
+        __new_heap_header__(
             args->min_heap_size, 
             0, 
             0, 
@@ -38,13 +37,10 @@ void start_vm(struct VMArgs *args) {
 
     struct Fibre *fibre_main = __new_fibre__();
     //but we also need to prepare the scheduler.
-    struct Scheduler *pool = malloc(sizeof(struct Scheduler));
-
-    pool->previous_fibre = pool; //self reference
-    pool->next_fibre = pool; //self reference
-    pool->ptr = fibre_main;
     
     //run multiple fibres in a single thread, or use M:N model too.
-    schedule_fibres(pool, args->instructions, heap, metadata, args->methodTable);
+    schedule_fibres(fibre_main, args->instructions, heap, metadata, args->methodTable, args->fx_table);
+    //it's guaranteed to have atleast one fibre.
+    __drop_fibre__(fibre_main);
 
 }

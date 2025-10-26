@@ -3,7 +3,7 @@
 
 enum OPCODES {
 
-    //this is bliss vm assembly or ISA.
+    //this is bliss vm assembly or ISA. 
     //general purpose arithmetic operation
     //OP_ADD TYPE (check the types.h for all the type ENUMs)
 
@@ -21,7 +21,13 @@ enum OPCODES {
     //jump call and syscall with conditional jump, address independent
     //store the 'to-be' jump address at R1, same for OP_CALL, and for syscall use the RSYS and R1
     //TODO: OP_CALL not yet implemented correctly, so is OP_SYSCALL
-    OP_JUMP, OP_CALL, OP_SYSCALL, OP_RETURN, //takes the address of the jump from constant table (heap)
+    OP_JUMP, OP_CALL, OP_SYSCALL, OP_RETURN,
+
+    //? OP_CALL <id>, <arg_ptr>: The <id> is looked up in the hash-table that gives us the instruction space address.
+    //? The arguments are guaranteed to be in a continous space (as per compiler)
+    
+    //? OP_FCALL does the exact same operands, except it launches a new fibre and the register there is used for
+    //? the function execution.
 
     //TODO: Implement Fibre Call, and increments.
     //! Fibre calls are not stored in call stacks -> they are independent.
@@ -32,7 +38,10 @@ enum OPCODES {
     TYPES(EQ), TYPES(NEQ), TYPES(LTEQ), TYPES(LE),
 
     //static move between registers, address dependent but easily encodable below
-    OP_MOV, OP_CLEAR,
+    OP_MOV, OP_CLEAR, 
+    
+    //copies data between two heap addresses. takes the heap addresses from R1 (source) and R2 (destination) and GR1 (size to copy)
+    OP_HEAP_COPY,
 
     //the only address dependent non-encodable OP-CODE. this loads an addresble value to some register
     //given by R1 or R2

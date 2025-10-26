@@ -1,6 +1,7 @@
 #include "engine.h"
+#include "error.h"
 #include "opcode.h"
-#include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 
 //Okay so this macro simply helps me avoid repetitive code in COMPILE TIME!!
@@ -20,11 +21,10 @@
     OP_f32##name: T(f32, fibre); goto L; \
     OP_d64##name: T(d64, fibre); goto L;
 
-void schedule_fibres(Scheduler *pool, uint64_t *instructions, uint8_t *heap, struct BlockUnit *heap_metadata, MethodTable *table) {
+void schedule_fibres(Fibre *fibre, uint64_t *instructions, uint8_t *heap, struct BlockUnit *heap_metadata, MethodTable *table, BytecodeMethodTable **fx_table) {
 
     //use a doubly-linked list for faster dispatch algorithm.
 
-    struct Fibre *fibre = pool->ptr;
     static void *dispatch_fetch_table[2] = { &&FETCH, &&__NEXT };
     static void *dispatch_table[OP_PROGRAM_END + 1] = {
         DISPATCH_TABLE_TYPES(ADD),
@@ -54,6 +54,8 @@ void schedule_fibres(Scheduler *pool, uint64_t *instructions, uint8_t *heap, str
         [OP_MOV] = &&OP_MOV,
         [OP_CLEAR] = &&OP_CLEAR,
 
+        [OP_HEAP_COPY] = &&OP_HEAP_COPY,
+
         [OP_LOAD] = &&OP_LOAD,
 
         [OP_ALLOC] = &&OP_ALLOC,
@@ -71,8 +73,7 @@ void schedule_fibres(Scheduler *pool, uint64_t *instructions, uint8_t *heap, str
         //this part is for the scheduler's logic of moving
         //through the fibre pointers.
         //?: Using doubly linked list, so that's that.
-        fibre = pool->next_fibre->ptr;
-        pool = pool->next_fibre;
+        fibre = fibre->next;
 
     __MAIN:
         
@@ -135,8 +136,7 @@ void schedule_fibres(Scheduler *pool, uint64_t *instructions, uint8_t *heap, str
     OP_MEMSTORE:      
         memcpy(
             &heap[
-                fibre->registers[R1].u64 + //address
-                fibre->registers[GR1].u64 //offset
+                fibre->registers[R1].u64 //address
             ], 
             &fibre->registers[R2].u64, 
             instructions[ _RPC + 1 ]
@@ -146,8 +146,7 @@ void schedule_fibres(Scheduler *pool, uint64_t *instructions, uint8_t *heap, str
         memcpy(
             &fibre->registers[ROUT].u64, 
             &heap[
-                fibre->registers[R1].u64 +//address
-                fibre->registers[R2].u64 //offset
+                fibre->registers[R1].u64//address
             ], 
             instructions[_RPC + 1]
         ); _RPC += 2; goto FETCH;
@@ -160,9 +159,35 @@ void schedule_fibres(Scheduler *pool, uint64_t *instructions, uint8_t *heap, str
         fibre->registers[ instructions[RPC + 1] ].u64 = 0;
         fibre->registers[RPC].u64 += 2; goto FETCH;
 
+    OP_HEAP_COPY:
+        memcpy(&heap[ _R1(u64) ], &heap[ _R2(u64) ], fibre->registers[ GR1 ].u64);
+        _RPC++; goto FETCH;
+
     OP_JUMP: _RPC = instructions[ fibre->registers[RPC + 1].u64 ]; goto FETCH;
 
-    OP_CALL: //TODO
+    OP_CALL:
+        //? OP_CALL _id _argument _callee_heap, _id = _RPC + 1, _argument = _RPC + 2
+        {
+            //simple step 1 -> allocate the memory
+            uint64_t adrs = 0; 
+            vmalloc(fx_table[ instructions[_RPC + 1] ]->funtion_size, &adrs, heap_metadata, &_RERR);
+            
+            //step 2 -> verify the allocation, if fail then silent closure
+            if ( _RERR == HEAP_MEMORY_FULL ) return;
+
+            //step 3 -> heap_address, return_address, callee_heap_address, arguments, data
+            memcpy(&heap[adrs], &adrs, 8); //copy over the heap address itself.
+            memcpy(&heap[adrs + 8], &instructions[_RPC + 4], 8); //copy over the return address (8 bytes)
+            memcpy(&heap[adrs + 16], &instructions[ _RPC + 3 ], 8); //copy over the heap address of the callee.
+            memcpy(&heap[adrs + 24], &heap[ instructions[_RPC + 2] ], fx_table[instructions[_RPC]]->arg_size); //copy over the argument.
+            
+            _RFX = adrs; //set the current function register to this
+            _RPC = fx_table[ instructions[_RPC + 1] ]->instruction_ptr; //go here
+
+            //direct functional dispatch.
+            goto *dispatch_table[instructions[ fibre->registers[RPC].u64 ]];
+
+        }
 
     OP_SYSCALL:
         fibre->status = WAITING;
@@ -170,7 +195,18 @@ void schedule_fibres(Scheduler *pool, uint64_t *instructions, uint8_t *heap, str
         table[instructions[_RPC + 1]](fibre, heap); _RPC+=2;
         goto FETCH;
 
-    OP_RETURN: //TODO
+    OP_RETURN:
+        {   
+            memcpy(&_RPC, &heap[ _RFX + 8 ], 8); //again, 8th padding so here we are.
+        
+            uint64_t adrs = _RFX;
+            //_RFX now should point to the callee heap address instead.
+            memcpy(&_RFX, &heap[_RFX + 16], 8); //16 because that's where the callee heap address is
+            //free the memory
+            vmfree(adrs, heap_metadata, &_RERR);
+            goto *dispatch_table[instructions[ fibre->registers[RPC].u64 ]]; //basically return.
+            
+        }
 
     COMPOSE(EQ, EQUAL, fibre, FETCH)
     COMPOSE(NEQ, EQUAL, fibre, FETCH)
@@ -181,14 +217,14 @@ void schedule_fibres(Scheduler *pool, uint64_t *instructions, uint8_t *heap, str
     OP_PROGRAM_END: 
         fibre->status = TERMINATED;
         //?: the reference is itself, so that means no more fibre left to execute.
-        if ( pool->next_fibre == pool ) {
+        if ( fibre->next == fibre ) {
             return;
         }
         //? rewires the pool for next/previous pointers
-        pool->previous_fibre->next_fibre = pool->next_fibre;
-        pool->next_fibre->previous_fibre = pool->previous_fibre;
+        fibre->before->next = fibre->next;
+        fibre->next->before = fibre->before;
         //? There MUST exist a next fibre, so switch there
-        pool = pool->next_fibre;
+        fibre = fibre->next;
 
         //? No need for the scheduler to run again, jump directly to __MAIN.
         goto __MAIN;

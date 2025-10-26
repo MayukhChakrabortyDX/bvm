@@ -122,4 +122,3 @@ in the bytecode but are provided via the terminal such as:
 2. Multiplication factor
 
 This is the entirety of the bytecode format.
-

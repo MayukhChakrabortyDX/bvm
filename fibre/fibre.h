@@ -35,22 +35,34 @@ enum RegisterAccesor {
     R1, R2, //2 input registers
     GR1, GR2, GR3, GR4, GR5, GR6, //6 general purpose registers
     ROUT, //output register 
-    RCARRY, RERR, RFLAG, RSYS, //system specific registers
+    RERR, RFX, RSYS, //system specific registers
     RPC //the program counter itself.
 };
 
 struct Fibre {
 
     //?: Intentional, Must be pointers of frames. Maximum of 1 MiB here.
+    struct Fibre *next;
+    struct Fibre *before;
     RegisterStorage *registers;
     FibreStatus status;
 
-};
+}; typedef struct Fibre Fibre;
 
-typedef struct Fibre Fibre;
 Fibre *__new_fibre__();
 void __drop_fibre__(Fibre *fibre);
 
 typedef void (*MethodTable)(struct Fibre*, uint8_t*);
 MethodTable *__new_method_table__();
 void __drop_method_table__(MethodTable *table);
+
+//? This is the storage where we have the functions themselves.
+//? Used by OP_CALL and OP_fCALL to optimize function call arithmetic.
+struct BytecodeMethodTable {
+    uint64_t instruction_ptr;
+    uint64_t funtion_size; //function size except argument space.
+    uint16_t arg_size; //size in bytes ofc.
+}; typedef struct BytecodeMethodTable BytecodeMethodTable;
+
+BytecodeMethodTable *__new_bytecode_method_table__();
+void __drop_bytecode_method_table__(BytecodeMethodTable *table);

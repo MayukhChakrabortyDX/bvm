@@ -12,14 +12,14 @@ int main() {
 
     static char *syscall_registry[MAX_REGISTRY_SIZE] = { "./println_dev.so" };
     MethodTable table[MAX_REGISTRY_SIZE] = { NULL };
-    struct BlockUnit *unit = BlockUnit_factory(50*1024*1024, 0, 0, 0);
+    HeapHeader *unit = __new_heap_header__(50*1024*1024, 0, 0, 0);
 
     //now let's create a hello world block.
     //basically create a constant is what I meant.
 
     uint8_t first_block[] = { 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x57, 0x6F, 0x72, 0x6C, 0x64, 0x0 };
 
-    struct ConstantBlock *block = ConstantBlock_factory(
+    struct ConstantBlock *block = __new_constant_block__(
         first_block, 12, NULL
     );
 
@@ -35,7 +35,12 @@ int main() {
     };
 
     struct VMArgs args = {
-        instructions, 20,1,block,table
+        instructions, 
+        20,
+        1,
+        block,
+        table, 
+        NULL
     };
 
     start_vm(&args);

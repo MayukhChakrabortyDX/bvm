@@ -1,6 +1,7 @@
 #include "fibre.h"
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 /*
     As always, since this factory can be reused for virtual thread,
@@ -14,7 +15,9 @@
 Fibre *__new_fibre__() {
 
     Fibre* fibre = (Fibre *) malloc( sizeof(Fibre) );
-    fibre->registers = ( RegisterStorage* ) malloc( sizeof( RegisterStorage ) * 14 );
+    fibre->registers = ( RegisterStorage* ) malloc( sizeof( RegisterStorage ) * 13 );
+    fibre->next = fibre;
+    fibre->before = fibre;
     return fibre;
 
 }

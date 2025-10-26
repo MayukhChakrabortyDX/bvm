@@ -1,51 +1,41 @@
-# Fibre Model V1
+# Lightweight and High performance Fibres
 
-This is the newer model for a concurrent and high-performance
-stackless 'fibre'
+A fibre in essence is a forward circular linked list
+that contains it's own registers and status window.
 
-## The specification
+It's extremely lightweight, just a few bytes and hence
+can be spawned in millions, only if the heap-size
+support it based on function calls.
 
-A fibre consists of the following
+## The concept
 
-```c
+A fibre simply stores unique registers (14, 8 bytes)
+alongside a next-> pointer and a status window.
 
-typedef struct {
-    Registers registers[14]; //all 14 of the registers.
-} Fibre;
+The instruction space is immutable and exists ahead
+of time, so is the heap, except the heap is mutable
+and allocable.
 
-```
-## How HEAP works?
+A sub-allocator (aside from malloc/free) is used to
+manage this pre-allocated heap.
 
-A heap is a shared area of storage across multiple concurrent
-fibres. Since a scheduler function takes a pool of this fibres,
-it also instinctly takes up the pointer to the heap.
+Since blissRT is by nature concurrent, the heap itself
+has mutex only for true-multi-threaded execution points.
 
-The execution engine itself manages the heap and the instructions.
+A single 1:N model do not need mutex because it's concurrent
+and hence access the heap one after another anyways.
 
-## How function calls works?
+## Function Calls
 
-Function calls are simple! The VM utilizes it's wide array of
-registers for this purpose!
+A function call reuses the internally allocated heap itself.
+A function may use local variables that are stored in the
+frame itself.
 
-When we call a function, a area in the heap is allocated to
-store all it's variables. The first 16 bytes in the same
-heap region are extra metadata and stores the following:
+The `OP_CALL` simply allocates the size of the function in
+the heap, and then allocates a bit more to store the following:
 
-[ heap_prt ][ return_address ]
+[ callee_ptr ][ function_info_ptr ][ this_heap_ptr ][ return_ptr ]
 
-When we use the `call` opcode, the VM do is:
-
-1. allocate the heap size as expected
-2. Populate the heap_prt and return address long values
-3. store the heap_prt in the RFLAG register.
-4. jumps to the address of the function itself.
-
-And then the function starts to execute as is, without
-any issue.
-
-When it's time to return, it simply returns to the return
-address already stored to it's heap.
-
-This help us to:
-1. avoid a stack completely and use the heap instead
-2. technically unbounded function call size if the heap is big enough.
+Now what happens is that the heap_ptr is also stored in the RFX
+register, which is used by the function to get to the correct heap
+address.

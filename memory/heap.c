@@ -1,19 +1,20 @@
-
+#include "../engine/error.h"
 #include "heap.h"
 
-struct BlockUnit *BlockUnit_factory(uint64_t size, uint64_t pointer, uint8_t is_allocated, uint8_t is_constant) {
+HeapHeader* __new_heap_header__(uint64_t size, uint64_t pointer, uint8_t is_allocated, uint8_t is_constant) {
 
-    struct BlockUnit *unit = (struct BlockUnit *)malloc(sizeof(struct BlockUnit));
+    HeapHeader *unit = (struct BlockUnit *)malloc(sizeof(struct BlockUnit));
 
     unit->size = size; unit->pointer = pointer; unit->is_allocated = is_allocated; unit->is_constant = is_constant;
     unit->next_block = NULL; unit->previous_block = NULL;
 
     return unit;
 
-}
+};
+
 
 // destination is generally the ROUT register
-void vmalloc(uint64_t size, NUMBER *destination, struct BlockUnit *block, NUMBER *error) {
+void vmalloc(uint64_t size, NUMBER *destination, HeapHeader *block, NUMBER *error) {
 
     *error = 0;
     // iterative unit!
@@ -21,7 +22,7 @@ void vmalloc(uint64_t size, NUMBER *destination, struct BlockUnit *block, NUMBER
 
         if ((block->size > size) && (block->is_allocated == 0) && (block->is_constant == 0)) {
             
-            struct BlockUnit *split = (struct BlockUnit *)malloc(sizeof(struct BlockUnit));
+            HeapHeader *split = (HeapHeader *)malloc(sizeof(HeapHeader));
 
             split->size = block->size-size;
             split->is_allocated = 0;
@@ -59,13 +60,13 @@ void vmalloc(uint64_t size, NUMBER *destination, struct BlockUnit *block, NUMBER
     }
 
     //no allocation found (size exceeded)
-    *error = 1;
+    *error = HEAP_MEMORY_FULL;
 }
 
-void vmfree(NUMBER address, struct BlockUnit *block, NUMBER *error) {
+void vmfree(NUMBER address, HeapHeader *block, NUMBER *error) {
 
     *error = 0;
-    struct BlockUnit *sub_block = block;
+    HeapHeader *sub_block = block;
     unsigned char is_free = 0;
 
     while (sub_block) {
@@ -85,7 +86,7 @@ void vmfree(NUMBER address, struct BlockUnit *block, NUMBER *error) {
     }
     
     if ( is_free == 0 ) {
-        *error = 1;
+        *error = INVALID_FREE;
     }
 
     //rejoin groups.
@@ -99,7 +100,7 @@ void vmfree(NUMBER address, struct BlockUnit *block, NUMBER *error) {
 
                     block->size = block->size + block->next_block->size;
                     
-                    struct BlockUnit *nextBlock = block->next_block;
+                    HeapHeader *nextBlock = block->next_block;
 
                     block->next_block = block->next_block->next_block;
 
