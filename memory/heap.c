@@ -1,5 +1,6 @@
 #include "../engine/error.h"
 #include "heap.h"
+#include <stdlib.h>
 
 HeapHeader* __new_heap_header__(uint64_t size, uint64_t pointer, uint8_t is_allocated, uint8_t is_constant) {
 

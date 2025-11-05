@@ -10,7 +10,7 @@ call/invokation registry and instruction size.
 [ version number ( 2 bytes ) ]
 [ constant pool region (variable bytes) ]
 [ invoke registry (variable bytes) ]
-[ header end ]
+[ method registry (variable bytes) ]
 
 1. Version Number
 
@@ -100,6 +100,22 @@ Step 4: Do this to match the size of the registry.
 Once we exhaust this list, we are sure that the registry has been loaded
 succesfully. Any error that comes during this phase is promtply reported and
 execution is terminated.
+
+4. Method Registry
+
+The method registry stores information about the methods that are written
+for the assembly itself. Here's the information needed to encode for a function:
+
+1. The function pointer (to the instruction space itself) - 8 bytes
+2. the size of the function (number of locals + args) - 8 bytes
+3. the size of the arguments (number of arguments) - 8 bytes
+
+It is encoded as follows:
+[ total functions defined ( 4 bytes ) ]
+[ fpointer (8 byte) ]
+[ fsize (8 byte) ]
+[ argsize (8 byte) ]
+... continue till exhaustion.
 
 What follows next is the instructions itself.
 

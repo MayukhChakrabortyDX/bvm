@@ -19,20 +19,14 @@ void start_vm(struct VMArgs *args) {
         );
 
     //based on the constant table, we need to produce a heap metadata.
-    {
+    struct ConstantBlock* block = args->constantTable;
 
-        struct ConstantBlock* block = args->constantTable;
-
-        while (block) {
-        
-            uint64_t ptr = 0;
-            uint64_t err = 0;
-            vmalloc(block->size, &ptr, metadata, &err);
-            memcpy(heap + ptr, args->constantTable->value, args->constantTable->size);
-            block = block->next_block;
-
-        }
-
+    while (block) {
+        uint64_t ptr = 0;
+        uint64_t err = 0;
+        vmalloc(block->size, &ptr, metadata, &err);
+        memcpy(heap + ptr, args->constantTable->value, args->constantTable->size);
+        block = block->next_block;
     }
 
     struct Fibre *fibre_main = __new_fibre__();

@@ -20,6 +20,7 @@ union RegisterStorage {
     int32_t  i32; //int
     int16_t  i16; //shor
     int8_t   i8; //byte (also acts as char)
+    uint8_t  u8;
 
     float    f32; //float
     double   d64; //double
@@ -35,8 +36,9 @@ enum RegisterAccesor {
     R1, R2, //2 input registers
     GR1, GR2, GR3, GR4, GR5, GR6, //6 general purpose registers
     ROUT, //output register 
-    RERR, RFX, RSYS, //system specific registers
-    RPC //the program counter itself.
+    RERR, RFX, RRET, RSYS, //system specific registers
+    RPC, //the program counter itself
+    REGISTER_COUNT
 };
 
 struct Fibre {
@@ -52,9 +54,9 @@ struct Fibre {
 Fibre *__new_fibre__();
 void __drop_fibre__(Fibre *fibre);
 
-typedef void (*MethodTable)(struct Fibre*, uint8_t*);
-MethodTable *__new_method_table__();
-void __drop_method_table__(MethodTable *table);
+typedef void (*SystemMethodTable)(struct Fibre*, uint8_t*);
+SystemMethodTable *__new_system_method_table__();
+void __drop_system_method_table__(SystemMethodTable *table);
 
 //? This is the storage where we have the functions themselves.
 //? Used by OP_CALL and OP_fCALL to optimize function call arithmetic.
@@ -64,5 +66,5 @@ struct BytecodeMethodTable {
     uint16_t arg_size; //size in bytes ofc.
 }; typedef struct BytecodeMethodTable BytecodeMethodTable;
 
-BytecodeMethodTable *__new_bytecode_method_table__();
+BytecodeMethodTable *__new_bytecode_method_table__(uint64_t instruction_ptr, uint64_t function_size, uint64_t arg_size);
 void __drop_bytecode_method_table__(BytecodeMethodTable *table);

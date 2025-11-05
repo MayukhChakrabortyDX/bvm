@@ -10,9 +10,9 @@
 
 int main() {
 
-    static char *syscall_registry[MAX_REGISTRY_SIZE] = { "./println_dev.so" };
-    MethodTable table[MAX_REGISTRY_SIZE] = { NULL };
-    HeapHeader *unit = __new_heap_header__(50*1024*1024, 0, 0, 0);
+    static char *syscall_registry[1] = { "./println_dev.so" };
+    SystemMethodTable table[1] = { NULL };
+    HeapHeader *unit = __new_heap_header__(12000, 0, 0, 0);
 
     //now let's create a hello world block.
     //basically create a constant is what I meant.
@@ -23,28 +23,30 @@ int main() {
         first_block, 12, NULL
     );
 
-    uint8_t *heap = malloc(12000);
-
     //load the system call for it to be able to execute.
     load_system_call(0, "println", table, syscall_registry[0]);
     //printf("%X", table->ptr);
 
+    //recursive function call test.
     uint64_t instructions[] = {
         OP_SYSCALL,0, 
+        OP_CALL, 0,
         OP_PROGRAM_END
     };
 
+    BytecodeMethodTable **_table = malloc( sizeof( BytecodeMethodTable* ) );
+    _table[0] = __new_bytecode_method_table__(0, 100,0);
+    
     struct VMArgs args = {
         instructions, 
-        20,
+        200000,
         1,
         block,
         table, 
-        NULL
+        _table
     };
 
     start_vm(&args);
-
     return 0;
 
 }

@@ -3,10 +3,6 @@
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#define MAX_REGISTRY_SIZE 1
-
-struct Fibre;
 //used by dlopen.
 
 //used by dlopen.
@@ -14,7 +10,7 @@ struct Fibre;
 //method table is global, has a global lifetime that lives beyond main.
 //okay so it basically loads the system call item here.
 //although we are using globals that could cause issue I feel.
-__attribute__((always_inline)) inline void load_system_call( uint8_t index, char* name, MethodTable *table, char *syscall_registry) {
+__attribute__((always_inline)) inline void load_system_call( uint8_t index, char* name, SystemMethodTable *table, char *syscall_registry) {
 
     void *handle = dlopen( syscall_registry, RTLD_NOW );
 

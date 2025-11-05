@@ -18,6 +18,7 @@ if [ "$DEV_MODE" = true ]; then
       ./memory/constants.c \
       ./fibre/fibre.c \
       ./vminit/start/runner.c ./engine/engine.c \
+      ./logger/logger.c \
       -o ./build/bliss   # Example: dev flags
     gcc -fPIC -shared -o ./build/println_dev.so ./syscall/libs/stdio.c
 else

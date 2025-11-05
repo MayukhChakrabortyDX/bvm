@@ -25,7 +25,8 @@
 
 enum ERRORS {
 
-    DIV_BY_ZERO = 1, //ofc. not allowed lol
+    NO_ERROR,
+    DIV_BY_ZERO, //ofc. not allowed lol
     INVALID_FREE,
     HEAP_MEMORY_FULL,
 
