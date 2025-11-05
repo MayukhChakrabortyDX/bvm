@@ -23,7 +23,7 @@ enum OPCODES {
 
     //jump call and syscall with conditional jump, address independent
     //store the 'to-be' jump address at R1, same for OP_CALL, and for syscall use the RSYS and R1
-    OP_JUMP, OP_CALL, OP_SYSCALL, OP_RETURN,
+    OP_JUMP_IF, OP_JUMP, OP_CALL, OP_SYSCALL, OP_RETURN,
 
     //? OP_CALL _id: The <id> is looked up in the hash-table that gives us the instruction space address.
     //? The arguments are guaranteed to be in a continous space (as per compiler)
@@ -41,7 +41,7 @@ enum OPCODES {
     //if true -> goes to the immediate next instruction, which is always a jump instruction
     //if false, skips the immediate next instruction.
     //again, equality operators OPS TYPE (check types.h for detailed type description.)
-    TYPES(EQ), TYPES(NEQ), TYPES(LTEQ), TYPES(LE),
+    TYPES(EQ), TYPES(NEQ), TYPES(LTEQ), TYPES(LT),
 
     //static move between registers, address dependent but easily encodable below
     OP_MOV, OP_CLEAR, 

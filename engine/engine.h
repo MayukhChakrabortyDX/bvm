@@ -10,6 +10,7 @@
 #define _ROUT(T) fibre->registers[ROUT].T
 #define _RERR fibre->registers[RERR].u64
 #define _RRET fibre->registers[RRET].u64
+#define _RFLAG fibre->flag
 
 #define RESIZE(size) _ROUT(u64) = _R1(size); _RPC++;
 //cast means (float) or (double) or (int32_t) etc.
@@ -30,9 +31,9 @@
 #define _XMUL(type, fibre) fibre->registers[instructions[_RPC + 1]].type *= instructions[_RPC + 2]; _RPC += 3;
 #define _XDIV(type, fibre) fibre->registers[instructions[_RPC + 1]].type /= instructions[_RPC + 2]; _RPC += 3; //verified to be NON-ZERO
 
-#define EQUAL(type, fibre) _RPC += _R1(type) == _R2(type) ? 1 : 2
-#define NOT_EQUAL(type, fibre) _RPC += _R1(type) != _R2(type) ? 1 : 2
-#define LESS_THAN_EQUAL(type, fibre) _RPC += _R1(type) <= _R2(type) ? 1 : 2
-#define LESS_THAN(type, fibre) _RPC += _R1(type) < _R2(type) ? 1 : 2
+#define EQUAL(type, fibre) _RFLAG = _R1(type) == _R2(type); _RPC++;
+#define NOT_EQUAL(type, fibre) _RFLAG = _R1(type) != _R2(type); _RPC++;
+#define LESS_THAN_EQUAL(type, fibre) _RFLAG = _R1(type) <= _R2(type); _RPC++;
+#define LESS_THAN(type, fibre) _RFLAG = _R1(type) < _R2(type); _RPC++;
 
 void schedule_fibres(Fibre *pool, uint64_t *instructions, uint8_t *heap, struct BlockUnit *heap_metadata, SystemMethodTable *table, BytecodeMethodTable **fx_table);

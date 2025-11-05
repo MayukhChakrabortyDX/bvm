@@ -38,7 +38,7 @@ enum RegisterAccesor {
     ROUT, //output register 
     RERR, RFX, RRET, RSYS, //system specific registers
     RPC, //the program counter itself
-    REGISTER_COUNT
+    REGISTER_COUNT //this is NOT a register, a end semantic
 };
 
 struct Fibre {
@@ -47,6 +47,7 @@ struct Fibre {
     struct Fibre *next;
     struct Fibre *before;
     RegisterStorage *registers;
+    uint8_t flag;
     FibreStatus status;
 
 }; typedef struct Fibre Fibre;

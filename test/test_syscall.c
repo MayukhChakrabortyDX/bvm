@@ -29,8 +29,13 @@ int main() {
 
     //recursive function call test.
     uint64_t instructions[] = {
-        OP_SYSCALL,0, 
-        OP_CALL, 0,
+   		OP_i32XADD, R2, 11,
+    	OP_JUMP, 8,
+    	OP_i32XADD, R1, 1,
+    	OP_MOV, RSYS, R1,
+        OP_SYSCALL,0,
+        OP_i32NEQ, 
+        OP_JUMP_IF, 5,
         OP_PROGRAM_END
     };
 

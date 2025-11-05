@@ -17,6 +17,7 @@ Fibre *__new_fibre__() {
     fibre->registers = ( RegisterStorage* ) malloc( sizeof( RegisterStorage ) * REGISTER_COUNT );
     fibre->next = fibre;
     fibre->before = fibre;
+    fibre->flag = 0;
     return fibre;
 
 }

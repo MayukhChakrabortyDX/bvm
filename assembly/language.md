@@ -1,154 +1,120 @@
-# The bliss assembly language
+# The bliss assembly language (BASM)
 
-The bliss assembly is the underlying code that
-actually runs on the runtime.
+All languages that ultimately targets the bliss runtime
+must adhere to the assembly language format as described
+in this document.
 
-The assembler compiles the assembly to useable
-bytecode by the runtime.
+## The syntax of BASM
 
-## The requirement
+BASM has three sections, `@data`, `@code` and `@func`
+sections.
 
-The most basic requirement to start the runtime
-is the following values:
+`@data` describes all the constants, including numbers
+and strings that are being used. They are heap-allocated
+static lifetime immutable blobs.
 
-- Instructions
-- Constant Table
-- System Method Table
-- Function Table
+`@code` stores the actual instructions that are going
+to be executed by the runtime itself
 
-So the bytecode must encode this in the file
-for the runtime to be able to produce an executable
-context.
+`@func` is the section that stores the function signature
+and it's locals, kind of like `@data` section but for
+local variables
 
-A few more requirements, tho optional are
+## Basic syntax of BASM
 
-- Minimum heap size
-- Heap Capacity Multiplier
-
-These tells how the memory is managed, and are
-passed via the command line arguments.
-
-## The assembly format
-
-The assembly takes inspirations from the real
-x86_64 assembly, modifiying certain parts
-to make it easier.
-
-Here's a simple example:
-```bsm
+```basm
 @data
-  str char* "Hello World"
-  a int 0
-end
-
-@function
-  $main (int, int), ::start
-    a int 10 ; these are local variable
-    b int 20 ; the second local variable stored linearly
-  endf
-  
-  $add (int, int), ::add
-  endf
-end
+; all data are stored here
 
 @code
-  call start
-  ::add
-    fregload R1 24 4 ; copy 4 bytes from the local variable, (argument)
-    fregload R2 28 4 ; copt 4 bytes again
-    iadd ; add the two integers
-    mov RRET ROUT
-    return ;return from the function
-    
-  ::start
-    ; prepare the call arguments in the heap first
-    alloc 8 ; 8 bytes because I need to pass two integers
-    mov R1 ROUT
-    load R2 24 ; load the offset constant
-    load GR1 4 ; load the first 4 bytes
-    fheap_copy
-    load R2 28 ; change the offset
-    mov GR3 R2
-    mov GR4 R1 ; keep a copy
-    load R2 4 ; offset
-    uladd
-    mov R1 ROUT
-    mov R1 GR3
-    fheap_copy
-    ; now our calling agent is ready!
-    mov R1 GR4; and we are done
-    ; we should save this address to free this call object here
-    call add
-end
+; code parts
+
+@func
+; function signature part
+
 ```
 
-We can use a lot of optimization details here, just the fact
-that we can use heap-allocated objects as arguments, which is
-so funny lol. (But easy to implement as well)
+The sections do not follow a strict order themselves, so
+each section can be written in whichever order the developer
+may want.
 
-## Syntax (in depth)
+## Line nature of BASM
 
-1. Sections
-All sections starts with '@'
+BASM is inherently a line-based syntax language. What
+it means is that lines are generally the defining feature
+for almost everything.
 
-There are only three sections, and they must be annotated to end.
+Each of the section consists of specific statement
+that follows some rule.
 
-@data section stores all the global constants
-@function section stores all the function information itself
-@code section stores all code that we are going to work with.
+```basm
 
-### @data section
+@data
+	statement1
+	statement2 // the indentation is not mandatory
+	
+@code
+	statement1
+	statement2
 
-Data section is straight forward, you define static runtime values
+```
 
-1. data types
+But a statement depends on the context, and here context
+means under which section it belongs.
 
-char, byte, short, int, long, float, double and array
+## The @data section
 
-<name> <type> <data>
+The `@data` section consists of all the static variables.
+Think of this like a place where you can define constant
+globals.
 
-example:
+A statement in the `@data` section is as follows:
 
-str char 'a'
+statement -> name type value
 
-or array
+Here, `name` is a string that follows [a-z][A-Z] only
+`type` is the data types which we will discuss in a bit
+`value` is again sensetive to the `type` as we discussed
 
-str char* "Hello World"
+- Primitive types
 
-or give fixed size array
+The following types are as follows:
+[ i8, i16, i32, i64, u8, u64, f, d ]
 
-str char[24] "Hello World"
-data int[25] [0, 1, 2, 3, 4, 5]
+and their names are self-explainatory.
 
-by default, all empty spaces are initialized using 0 value
+- Array types
 
-### @function section
+Just use `*` after a type to denote the start of an array
 
-This section stores metadata about the function itself.
-Let's identify the syntax itself:
+- Values
 
-$name (arg1, arg2) ::label
-endf
+Now, let's understand how the syntax itself works using
+values
 
-so we use $<name> to define the name of the Function.
-the (arg1, arg2, ...) stores the argument list for the
-Function.
+```basm
 
-The ::label is the function label, the ultimate jump that's
-going to happen eventually.
+@data
+	helloWorld char* "Hello World"
+	a i32* [0, 1, 2, 3, 4]
+	a i32* [0; 25]; [x; y] <- x = initial value, y = total static size
+	a i32 56
+	b i32 -8
+	c f 2.368
+	; etc..
 
-The function can also define local variables ahead of time
-(must be actually) for it to work.
+```
 
-$name (arg1, arg2) ::label
-  <name> <type> <data>
-endf
+That's pretty much it in regards to the `@data` section
 
-The syntax is same as how we define static variables, except
-those statics are immutable, but function local variables
-are mutable by certain function instance.
+## The @func section
 
-### @code section
+This section consists of sub-sections that defines a
+function itself.
 
-This is where all the code actually lies. You have to write
-the code here
+The statement is again further divided into multiple parts
+now.
+
+statement -> 	$name (type, type) ::section
+	sub statement -> identical to @data statement
+	

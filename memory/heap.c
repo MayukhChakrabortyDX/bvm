@@ -13,7 +13,6 @@ HeapHeader* __new_heap_header__(uint64_t size, uint64_t pointer, uint8_t is_allo
 
 };
 
-
 // destination is generally the ROUT register
 void vmalloc(uint64_t size, NUMBER *destination, HeapHeader *block, NUMBER *error) {
 

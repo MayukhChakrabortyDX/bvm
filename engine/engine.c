@@ -50,7 +50,8 @@ void schedule_fibres(Fibre *fibre, uint64_t *instructions, uint8_t *heap, struct
         [OP_lCONVd] = &&OP_lCONVd, 
         [OP_fCONVi] = &&OP_fCONVi, 
         [OP_dCONVl] = &&OP_dCONVl,
-
+        
+        [OP_JUMP_IF] = &&OP_JUMP_IF,
         [OP_JUMP] = &&OP_JUMP,
         [OP_CALL] = &&OP_CALL,
         [OP_SYSCALL] = &&OP_SYSCALL,
@@ -59,7 +60,7 @@ void schedule_fibres(Fibre *fibre, uint64_t *instructions, uint8_t *heap, struct
         DISPATCH_TABLE_TYPES(EQ),
         DISPATCH_TABLE_TYPES(NEQ),
         DISPATCH_TABLE_TYPES(LTEQ),
-        DISPATCH_TABLE_TYPES(LE),
+        DISPATCH_TABLE_TYPES(LT),
 
         [OP_MOV] = &&OP_MOV,
         [OP_CLEAR] = &&OP_CLEAR,
@@ -214,11 +215,11 @@ void schedule_fibres(Fibre *fibre, uint64_t *instructions, uint8_t *heap, struct
         ); _RPC += 2; goto FETCH;
 
     OP_MOV:       
-        fibre->registers[ instructions[RPC + 1] ].u64 = fibre->registers[ instructions[RPC + 2] ].u64;
+        fibre->registers[ instructions[_RPC + 1] ].u64 = fibre->registers[ instructions[_RPC + 2] ].u64;
         _RPC+=3; goto FETCH;
 
     OP_CLEAR:     
-        fibre->registers[ instructions[RPC + 1] ].u64 = 0;
+        fibre->registers[ instructions[_RPC + 1] ].u64 = 0;
         _RPC += 2; goto FETCH;
 
     //Heap Copy and Function Heap Copy
@@ -236,6 +237,7 @@ void schedule_fibres(Fibre *fibre, uint64_t *instructions, uint8_t *heap, struct
         memcpy(&heap[ _R1(u64)], &heap[ _RFX + _R2(u64) ], fibre->registers[ GR1 ].u64 );
         _RPC++; goto FETCH;
         
+    OP_JUMP_IF: _RPC = _RFLAG == 1 ? instructions[_RPC + 1] : _RPC + 2; goto FETCH;
     OP_JUMP: _RPC = instructions[ _RPC + 1 ]; goto FETCH;
 
     OP_CALL:
@@ -283,9 +285,9 @@ void schedule_fibres(Fibre *fibre, uint64_t *instructions, uint8_t *heap, struct
         goto *dispatch_table[instructions[ _RPC ]]; //basically return.
 
     COMPOSE(EQ, EQUAL, fibre, FETCH)
-    COMPOSE(NEQ, EQUAL, fibre, FETCH)
-    COMPOSE(LE, EQUAL, fibre, FETCH)
-    COMPOSE(LTEQ, EQUAL, fibre, FETCH)
+    COMPOSE(NEQ, NOT_EQUAL, fibre, FETCH)
+    COMPOSE(LT, LESS_THAN, fibre, FETCH)
+    COMPOSE(LTEQ, LESS_THAN_EQUAL, fibre, FETCH)
 
     // naturally ends VM
     OP_PROGRAM_END: 
@@ -305,7 +307,6 @@ void schedule_fibres(Fibre *fibre, uint64_t *instructions, uint8_t *heap, struct
 
         //? No need for the scheduler to run again, jump directly to __MAIN.
         goto __MAIN;
-
     return;
 
 }
