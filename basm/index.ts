@@ -34,14 +34,10 @@ function processDataSection(statement: string) {
 	
 }
 
-function produceOutput(program: string) {
-	let output: Uint8Array = new Uint8Array([]);
-	let code: Uint8Array[] = []
-	let data: Uint8Array[] = []
-	let func: Uint8Array[] = []
-	
-	let lines: string[] = program.split("\n");
-	lines = lines.map(line => line.trim()); //nice and tidy
+//stage-1 -> process raw bytecode and produce simple bucket stuff here
+let buckets = new Bucket(rawData.trim().split('\n'));
+buckets.produceBucket()
+Logger("INFO", 'Stage 1 Completed', body)
 
 	let mode: null | 'data' | 'code' | 'func' = null
 	
