@@ -97,10 +97,11 @@ values
 @data
 	helloWorld char* "Hello World"
 	a i32* [0, 1, 2, 3, 4]
-	a i32* [0; 25]; [x; y] <- x = initial value, y = total static size
-	a i32 56
-	b i32 -8
-	c f 2.368
+	k char** [ "Hello World", "Second String!", "Third String" ]
+	b i32: [0|25]; [x| y] <- x = initial value, y = total static size
+	c i32 56
+	d i32 -8
+	e f32 2.368
 	; etc..
 
 ```
@@ -116,5 +117,22 @@ The statement is again further divided into multiple parts
 now.
 
 statement -> 	$name (type, type) ::section
-	sub statement -> identical to @data statement
+	sub_statement -> identical to @data statement
 	
+Let's unpack this a bit more:
+
+```basm
+
+@func
+	$main (int, char*) ::main
+		a int 10
+		b int 20
+		c char* "Hello World"
+```
+
+So the local variable definitions are identical to how we
+would define the `@data` section itself.
+
+What's new is the function signature itself, which is self
+explainatory, it just means you are taking the said arguments
+as variables.

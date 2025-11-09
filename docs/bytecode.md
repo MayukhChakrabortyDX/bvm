@@ -8,6 +8,7 @@ Contains the version information, the constant pool, system
 call/invokation registry and instruction size.
 
 [ version number ( 2 bytes ) ]
+[ active memory usage (8 bytes) ]
 [ constant pool region (variable bytes) ]
 [ invoke registry (variable bytes) ]
 [ method registry (variable bytes) ]
@@ -17,6 +18,20 @@ call/invokation registry and instruction size.
 This is an unsigned integer type value taking up 2 bytes of
 space. This tell the VM the version of the bytecode, often
 helping in telling compatibility.
+
+2. Active Memory Usage
+
+Active Memory usage is the minimum memory requirement of the
+program calculated based on the constant pool and the function
+definition itself.
+
+When the runtime is initialized without any memory constraint
+pre-defined by the user, the runtime takes up the data of the
+active memory usage region, and a rough multiplier is calculated
+based on the fact that the runtime is allowed to use 50% of
+the total system memory with defaults.
+
+So basically multiplier = round ( system_memory * 0.5 / amu )
 
 2. Constant pool
 
@@ -29,9 +44,14 @@ and are loaded to the heap one by one.
 
 ### Memory Layout of constant pool
 
-[ size of pool (8 bytes) ]
+[ size of primitive pool (8 bytes) ]
 [ bytes to copy ( 8 bytes, unsigned long ) ]
 [ actual raw binary data, of the given size. (variable bytes) ]
+
+And separation of the region as
+
+[ size of array pool (8 bytes) ]
+[ total bytes required (8 bytes) ][ initial value (8 bytes) ]
 
 In other words, the algorithm goes somewhat like this:
 
