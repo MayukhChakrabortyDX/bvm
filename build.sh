@@ -17,7 +17,7 @@ case "${UNAME_OUT}" in
     Linux*)     SHARED_EXT="so";   SHARED_FLAGS="-fPIC -shared" ;;
     Darwin*)    SHARED_EXT="dylib"; SHARED_FLAGS="-dynamiclib" ;;
     MINGW*|MSYS*|CYGWIN*)
-                SHARED_EXT="dll";  
+                SHARED_EXT="dll";
                 SHARED_FLAGS="-shared" ;;  # PIC not required on Windows
     *)
                 echo "Unknown platform. Defaulting to Linux settings."

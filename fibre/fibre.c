@@ -15,6 +15,7 @@ Fibre *__new_fibre__() {
 
     Fibre* fibre = (Fibre *) malloc( sizeof(Fibre) );
     fibre->registers = ( RegisterStorage* ) malloc( sizeof( RegisterStorage ) * REGISTER_COUNT );
+    fibre->registers[RPC].u64 = 0;
     fibre->next = fibre;
     fibre->before = fibre;
     fibre->flag = 0;
