@@ -6,35 +6,42 @@
 #include "../logger/logger.h"
 #include "engine.h"
 #include "error.h"
+#include "opcode.h"
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 
 #define COMPOSE(name, T, fibre)                                                                                        \
-    OP_i64##name : T(i64, fibre);                                                                                      \
-    break;                                                                                                             \
-    OP_u64##name : T(u64, fibre);                                                                                      \
-    break;                                                                                                             \
-    OP_i32##name : T(i32, fibre);                                                                                      \
-    break;                                                                                                             \
-    OP_i16##name : T(i16, fibre);                                                                                      \
-    break;                                                                                                             \
-    OP_i8##name : T(i8, fibre);                                                                                        \
-    break;                                                                                                             \
-    OP_u8##name : T(u8, fibre);                                                                                        \
-    break;                                                                                                             \
-    OP_f32##name : T(f32, fibre);                                                                                      \
-    break;                                                                                                             \
-    OP_d64##name : T(d64, fibre);                                                                                      \
-    break;
+    case OP_i64##name:                                                                                                 \
+        T(i64, fibre);                                                                                                 \
+        break;                                                                                                         \
+    case OP_u64##name:                                                                                                 \
+        T(u64, fibre);                                                                                                 \
+        break;                                                                                                         \
+    case OP_i32##name:                                                                                                 \
+        T(i32, fibre);                                                                                                 \
+        break;                                                                                                         \
+    case OP_i16##name:                                                                                                 \
+        T(i16, fibre);                                                                                                 \
+        break;                                                                                                         \
+    case OP_i8##name:                                                                                                  \
+        T(i8, fibre);                                                                                                  \
+        break;                                                                                                         \
+    case OP_u8##name:                                                                                                  \
+        T(u8, fibre);                                                                                                  \
+        break;                                                                                                         \
+    case OP_f32##name:                                                                                                 \
+        T(f32, fibre);                                                                                                 \
+        break;                                                                                                         \
+    case OP_d64##name:                                                                                                 \
+        T(d64, fibre);                                                                                                 \
+        break;
 
-void schedule_fibres(Fibre* fibre, uint64_t* instructions, uint8_t* heap, struct BlockUnit* heap_metadata, SystemMethodTable* table, BytecodeMethodTable** fx_table) {
+void schedule_fibres(Fibre* fibre, uint64_t* instructions, uint8_t* heap, struct BlockUnit* heap_metadata,
+                     SystemMethodTable* table, BytecodeMethodTable** fx_table) {
 
     while (fibre) {
-    
-    	fibre = fibre->next;
-     
-        printf("iptr: %llu\n", _RPC);
+
+        fibre = fibre->next;
 
         switch (instructions[_RPC]) {
 
@@ -48,45 +55,36 @@ void schedule_fibres(Fibre* fibre, uint64_t* instructions, uint8_t* heap, struct
             COMPOSE(XSUB, _XSUB, fibre)
             COMPOSE(XDIV, _XDIV, fibre)
 
-        OP_INCREMENT:
-            fibre->registers[instructions[_RPC + 1]].u64++;
-            _RPC += 2;
-            break;
-        OP_DECREMENT:
-            fibre->registers[instructions[_RPC + 1]].u64--;
-            _RPC += 2;
-            break;
-
-        OP_iRESIZE_8:
+        case OP_iRESIZE_8:
             RESIZE(i8);
             break;
-        OP_iRESIZE_16:
+        case OP_iRESIZE_16:
             RESIZE(i16);
             break;
-        OP_iRESIZE_32:
+        case OP_iRESIZE_32:
             RESIZE(i32);
             break;
 
-        OP_iCONVf:
+        case OP_iCONVf:
             CONV(float, i32, f32) break;
-        OP_lCONVd:
+        case OP_lCONVd:
             CONV(double, i64, d64) break;
-        OP_fCONVi:
+        case OP_fCONVi:
             CONV(int32_t, f32, i32) break;
-        OP_dCONVl:
+        case OP_dCONVl:
             CONV(int64_t, d64, i64) break;
 
-        OP_FREE:
+        case OP_FREE:
             vmfree(_R1(u64), heap_metadata, &_RERR);
             _RPC++;
             break;
 
-        OP_ALLOC:
+        case OP_ALLOC:
             vmalloc(_R1(u64), &_ROUT(u64), heap_metadata, &_RERR);
             _RPC++;
             break;
 
-        OP_LOAD:
+        case OP_LOAD:
             memcpy(
                 // this looks a bit complicated so let me clarify
                 // the destination is a register, so we need to pass pointe
@@ -102,7 +100,7 @@ void schedule_fibres(Fibre* fibre, uint64_t* instructions, uint8_t* heap, struct
             _RPC += 4;
             break;
 
-        OP_fLOAD:
+        case OP_fLOAD:
             memcpy(
                 // this looks a bit complicated so let me clarify
                 // the destination is a register, so we need to pass pointe
@@ -119,21 +117,21 @@ void schedule_fibres(Fibre* fibre, uint64_t* instructions, uint8_t* heap, struct
             _RPC += 4;
             break;
 
-        OP_MEMSTORE:
+        case OP_MEMSTORE:
             memcpy(&heap[_R1(u64) // address
             ],
                    &_R2(u64), instructions[_RPC + 1]);
             _RPC += 2;
             break;
 
-        OP_fMEMSTORE:
+        case OP_fMEMSTORE:
             memcpy(&heap[_R1(u64) + _RFX // address + function offset
             ],
                    &_R2(u64), instructions[_RPC + 1]);
             _RPC += 2;
             break;
 
-        OP_REGLOAD: // address to heap is stored in R1, offset in R2
+        case OP_REGLOAD: // address to heap is stored in R1, offset in R2
             memcpy(&_ROUT(u64),
                    &heap[_R1(u64) // address
             ],
@@ -141,7 +139,7 @@ void schedule_fibres(Fibre* fibre, uint64_t* instructions, uint8_t* heap, struct
             _RPC += 2;
             break;
 
-        OP_fREGLOAD:
+        case OP_fREGLOAD:
             memcpy(&_ROUT(u64),
                    &heap[_R1(u64) + _RFX // address + function offset.
             ],
@@ -149,12 +147,12 @@ void schedule_fibres(Fibre* fibre, uint64_t* instructions, uint8_t* heap, struct
             _RPC += 2;
             break;
 
-        OP_MOV:
+        case OP_MOV:
             fibre->registers[instructions[_RPC + 1]].u64 = fibre->registers[instructions[_RPC + 2]].u64;
             _RPC += 3;
             break;
 
-        OP_CLEAR:
+        case OP_CLEAR:
             fibre->registers[instructions[_RPC + 1]].u64 = 0;
             _RPC += 2;
             break;
@@ -166,24 +164,24 @@ void schedule_fibres(Fibre* fibre, uint64_t* instructions, uint8_t* heap, struct
             //  the destination is still R1, but R2 is now function offset instead of pure address
             //  GR1 still stores the size.
 
-        OP_HEAP_COPY:
+        case OP_HEAP_COPY:
             memcpy(&heap[_R1(u64)], &heap[_R2(u64)], fibre->registers[GR1].u64);
             _RPC++;
             break;
 
-        OP_fHEAP_COPY:
+        case OP_fHEAP_COPY:
             memcpy(&heap[_R1(u64)], &heap[_RFX + _R2(u64)], fibre->registers[GR1].u64);
             _RPC++;
             break;
 
-        OP_JUMP_IF:
+        case OP_JUMP_IF:
             _RPC = _RFLAG == 1 ? instructions[_RPC + 1] : _RPC + 2;
             break;
-        OP_JUMP:
+        case OP_JUMP:
             _RPC = instructions[_RPC + 1];
             break;
 
-        OP_CALL:
+        case OP_CALL:
             //? OP_CALL _id, and _argument is taken from R1, _callee_heap is taken from RFX
             {
                 // simple step 1 -> allocate the memory
@@ -208,14 +206,14 @@ void schedule_fibres(Fibre* fibre, uint64_t* instructions, uint8_t* heap, struct
                 break;
             }
 
-        OP_SYSCALL:
+        case OP_SYSCALL:
             fibre->status = WAITING;
             // a system call can ONLY manipulate registers and heap.
             table[instructions[_RPC + 1]](fibre, heap);
             _RPC += 2;
             break;
 
-        OP_RETURN:
+        case OP_RETURN:
             // giving this so that zed formats it well
             {
                 memcpy(&_RPC, &heap[_RFX + 8], 8); // again, 8th padding so here we are.
@@ -231,7 +229,7 @@ void schedule_fibres(Fibre* fibre, uint64_t* instructions, uint8_t* heap, struct
             COMPOSE(LT, LESS_THAN, fibre)
             COMPOSE(LTEQ, LESS_THAN_EQUAL, fibre)
 
-        OP_PROGRAM_END:
+        case OP_PROGRAM_END:
             // again giving this for better formatting
             {
                 fibre->status = TERMINATED;

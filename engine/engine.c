@@ -1,4 +1,10 @@
-#ifdef _WIN32
+//#define DEBUG
+
+#ifdef DEBUG
+	#include <stdio.h>
+#endif
+
+#ifndef _WIN32
 
 #include "engine_win.c"
 
@@ -122,9 +128,6 @@ void schedule_fibres(Fibre *fibre, uint64_t *instructions, uint8_t *heap, struct
     COMPOSE(XMUL, _XMUL, fibre, FETCH)
     COMPOSE(XSUB, _XSUB, fibre, FETCH)
     COMPOSE(XDIV, _XDIV, fibre, FETCH)
-
-    OP_INCREMENT: fibre->registers[ instructions[_RPC + 1] ].u64++; _RPC+=2; goto FETCH;
-    OP_DECREMENT: fibre->registers[ instructions[_RPC + 1] ].u64--; _RPC+=2; goto FETCH;
 
     OP_iRESIZE_8:  RESIZE(i8);  goto FETCH;
     OP_iRESIZE_16: RESIZE(i16); goto FETCH;
@@ -274,6 +277,10 @@ void schedule_fibres(Fibre *fibre, uint64_t *instructions, uint8_t *heap, struct
         goto *dispatch_table[instructions[ _RPC ]];
 
     OP_SYSCALL:
+    
+    	#ifdef DEBUG
+     		printf("Debug: SYSCALL reached");
+       	#endif
         fibre->status = WAITING;
         //a system call can ONLY manipulate registers and heap.
         table[instructions[_RPC + 1]](fibre, heap); _RPC+=2;
