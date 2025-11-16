@@ -38,5 +38,4 @@ VMArgs *__new_vmargs__(
     BytecodeMethodTable **fx_table
 );
 void __drop_vmargs__(VMArgs *ptr);
-
 void start_vm(struct VMArgs *args);

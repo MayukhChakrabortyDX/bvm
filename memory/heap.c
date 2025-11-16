@@ -2,16 +2,23 @@
 #include "heap.h"
 #include <stdlib.h>
 
-HeapHeader* __new_heap_header__(uint64_t size, uint64_t pointer, uint8_t is_allocated, uint8_t is_constant) {
+HeapHeader* __new_heap_header__(uint64_t size, uint64_t pointer, uint8_t is_allocated) {
 
     HeapHeader *unit = (struct BlockUnit *)malloc(sizeof(struct BlockUnit));
 
-    unit->size = size; unit->pointer = pointer; unit->is_allocated = is_allocated; unit->is_constant = is_constant;
+    unit->size = size; unit->pointer = pointer; unit->is_allocated = is_allocated;
     unit->next_block = NULL; unit->previous_block = NULL;
 
     return unit;
 
 };
+
+void __drop_heap_header(HeapHeader *ptr) {
+	
+	//drop the individual heap header.
+	free(ptr);
+	
+}
 
 // destination is generally the ROUT register
 void vmalloc(uint64_t size, NUMBER *destination, HeapHeader *block, NUMBER *error) {
@@ -20,7 +27,7 @@ void vmalloc(uint64_t size, NUMBER *destination, HeapHeader *block, NUMBER *erro
     // iterative unit!
     while (block) {
 
-        if ((block->size > size) && (block->is_allocated == 0) && (block->is_constant == 0)) {
+        if ((block->size > size) && (block->is_allocated == 0)) {
             
             HeapHeader *split = (HeapHeader *)malloc(sizeof(HeapHeader));
 
@@ -47,7 +54,7 @@ void vmalloc(uint64_t size, NUMBER *destination, HeapHeader *block, NUMBER *erro
             
         }
 
-        else if ((block->size == size) && (block->is_allocated == 0) && (block->is_constant == 0)) {
+        else if ((block->size == size) && (block->is_allocated == 0)) {
 
             block->is_allocated = 1;
             *destination = (NUMBER)block->pointer;
@@ -72,7 +79,7 @@ void vmfree(NUMBER address, HeapHeader *block, NUMBER *error) {
     while (sub_block) {
         //constants cannot be freed.
         if ( sub_block->pointer == address ) {
-            if ( sub_block->is_allocated == 1 && sub_block->is_constant == 0 ) {
+            if ( sub_block->is_allocated == 1 ) {
 
                 sub_block->is_allocated = 0;
                 is_free = 1; //free is succesful

@@ -1,4 +1,4 @@
-#include "../syscall/registry.h"
+#include "../syscall/loader.h"
 #include "../engine/opcode.h"
 #include "../fibre/fibre.h"
 #include <stdint.h>
@@ -16,7 +16,8 @@ int main() {
 
     //now let's create a hello world block.
     //basically create a constant is what I meant.
-
+    
+    //This is literally Hello World
     uint8_t first_block[] = { 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x57, 0x6F, 0x72, 0x6C, 0x64, 0x0 };
 
     struct ConstantBlock *block = __new_constant_block__(
@@ -50,8 +51,12 @@ int main() {
         table, 
         _table
     };
-
+    
+    uint8_t filedata[] = {2, 8};
+    
+    //struct VMArgs *test = parse_bytecode_v0(filedata, 2);
     start_vm(&args);
+    
     return 0;
 
 }

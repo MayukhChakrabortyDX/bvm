@@ -79,7 +79,7 @@ Here, `name` is a string that follows [a-z][A-Z] only
 - Primitive types
 
 The following types are as follows:
-[ i8, i16, i32, i64, u8, u64, f, d ]
+[ i8, i16, i32, i64, u8, u64, f32, f64 ]
 
 and their names are self-explainatory.
 
@@ -97,7 +97,7 @@ values
 @data
 	helloWorld char* "Hello World"
 	a i32* [0, 1, 2, 3, 4]
-	k char** [ "Hello World", "Second String!", "Third String" ]
+	k char** [ "Hello World", "Second String!", "Third String" ] ; multi dimensional strings are also allowed!
 	b i32: [0|25]; [x| y] <- x = initial value, y = total static size
 	c i32 56
 	d i32 -8
@@ -122,7 +122,7 @@ statement -> 	$name (type, type) ::section
 Let's unpack this a bit more:
 
 ```basm
-
+	
 @func
 	$main (int, char*) ::main
 		a int 10
@@ -136,3 +136,10 @@ would define the `@data` section itself.
 What's new is the function signature itself, which is self
 explainatory, it just means you are taking the said arguments
 as variables.
+
+## The @code section
+
+This is the interesting part, because this contains the actual
+code that needs to be executed.
+
+Code part is also analyzed line wise, to make it easier to

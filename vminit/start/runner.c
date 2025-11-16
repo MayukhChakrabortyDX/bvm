@@ -38,3 +38,41 @@ void start_vm(struct VMArgs *args) {
     __drop_fibre__(fibre_main);
 
 }
+
+VMArgs *__new_vmargs__(
+    uint64_t *instructions, 
+    uint64_t min_heap_size, 
+    uint32_t heap_capacity_multipler, 
+    ConstantBlock *constants,
+    SystemMethodTable *methodTable,
+    BytecodeMethodTable **fx_table
+) {
+	
+	VMArgs *args = malloc(sizeof( VMArgs ));
+	
+	args->instructions = instructions;
+	args->min_heap_size = min_heap_size;
+	args->heap_capacity_multipler = heap_capacity_multipler;
+	args->constantTable = constants;
+	args->methodTable = methodTable;
+	args->fx_table = fx_table;
+	
+	return args;
+	
+}
+
+void __drop_vmargs__(VMArgs *ptr) {
+	free(ptr->instructions); //this is indeed heap allocated
+	__drop_constant_block__(ptr->constantTable);
+	//__drop_system_method_table__(ptr->methodTable);
+	
+	BytecodeMethodTable *buffer = ptr->fx_table[0];
+	while (buffer) {
+		__drop_bytecode_method_table__(buffer);
+		buffer = buffer + 1;
+	}
+	
+	//finally free itself
+	free(ptr);
+	
+}
