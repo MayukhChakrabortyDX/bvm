@@ -10,6 +10,9 @@
 #include <string.h>
 #include "../../fibre/fibre.h"
 
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
 void println(Fibre *fibre, uint8_t *heap) {
     
     //get the memory (heap) address from the syscall register

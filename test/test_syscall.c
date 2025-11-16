@@ -3,16 +3,19 @@
 #include "../fibre/fibre.h"
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 #include "../memory/heap.h"
 #include "../memory/constants.h"
 #include "../vminit/start/runner.h"
 
 int main() {
 
-    static char *syscall_registry[1] = { "./println_dev.so" };
+	#ifdef _WIN32
+		static char *syscall_registry[1] = { "./println_dev.dll" };
+	#else
+		static char *syscall_registry[1] = { "./println_dev.so" };
+	#endif
     SystemMethodTable table[1] = { NULL };
-    HeapHeader *unit = __new_heap_header__(12000, 0, 0, 0);
+    HeapHeader *unit = __new_heap_header__(12000, 0, 0);
 
     //now let's create a hello world block.
     //basically create a constant is what I meant.

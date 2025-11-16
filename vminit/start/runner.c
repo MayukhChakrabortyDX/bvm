@@ -14,7 +14,6 @@ void start_vm(struct VMArgs *args) {
         __new_heap_header__(
             args->min_heap_size, 
             0, 
-            0, 
             0
         );
 
