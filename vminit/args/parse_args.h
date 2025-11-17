@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CMD_ARGS
+#define CMD_ARGS
 
 typedef struct {
 	char *name;
@@ -13,3 +14,4 @@ typedef struct {
 //produces a well-formed argument here
 Argument process_args(int argc, char** argv);
 //no need to 
+#endif

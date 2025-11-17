@@ -1,4 +1,6 @@
-#pragma once
+#ifndef CONSTANTS
+#define CONSTANTS
+
 #include <stdint.h>
 
 struct ConstantBlock {
@@ -11,3 +13,5 @@ struct ConstantBlock {
 
 ConstantBlock* __new_constant_block__( uint8_t* value, uint64_t size, ConstantBlock *next_block );
 void __drop_constant_block__(ConstantBlock* ptr);
+
+#endif

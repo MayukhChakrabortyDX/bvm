@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RUNNER
+#define RUNNER
 
 /*
 
@@ -39,3 +40,5 @@ VMArgs *__new_vmargs__(
 );
 void __drop_vmargs__(VMArgs *ptr);
 void start_vm(struct VMArgs *args);
+
+#endif

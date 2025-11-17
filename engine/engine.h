@@ -1,4 +1,6 @@
-#pragma once
+#ifndef EXEC_ENGINE
+#define EXEC_ENGINE
+
 #include "../fibre/fibre.h"
 #include "../memory/heap.h"
 #include <stdint.h>
@@ -37,3 +39,5 @@
 #define LESS_THAN(type, fibre) _RFLAG = _R1(type) < _R2(type); _RPC++;
 
 void schedule_fibres(Fibre *pool, uint64_t *instructions, uint8_t *heap, struct BlockUnit *heap_metadata, SystemMethodTable *table, BytecodeMethodTable **fx_table);
+
+#endif

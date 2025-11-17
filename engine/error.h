@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ERROR_CODES
+#define ERROR_CODES
 
 /*
     Contains status codes, error flags and conditions.
@@ -39,3 +40,5 @@ enum ERRORS {
     REGLOAD_INVALID_HEAP_ADDRESS
 
 };
+
+#endif

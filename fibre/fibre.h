@@ -3,7 +3,8 @@
     or real depending on use case.
 */
 
-#pragma once
+#ifndef FIBRE
+#define FIBRE
 #include <stdint.h>
 
 //useful for multi-threading (M:N Model)
@@ -69,3 +70,5 @@ struct BytecodeMethodTable {
 
 BytecodeMethodTable *__new_bytecode_method_table__(uint64_t instruction_ptr, uint64_t function_size, uint64_t arg_size);
 void __drop_bytecode_method_table__(BytecodeMethodTable *table);
+
+#endif

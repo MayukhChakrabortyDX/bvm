@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __LOGGER__
+#define __LOGGER__
 
 enum logType {
 
@@ -9,3 +10,5 @@ enum logType {
 }; typedef enum logType logType ;
 
 void logger( logType name, char* title, char* message );
+
+#endif

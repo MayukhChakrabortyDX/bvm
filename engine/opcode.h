@@ -1,4 +1,6 @@
-#pragma once
+#ifndef RTCODES
+#define RTCODES
+
 #include "types.h"
 
 enum OPCODES {
@@ -74,3 +76,5 @@ enum OPCODES {
     OP_PROGRAM_END
 
 };
+
+#endif

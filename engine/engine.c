@@ -1,14 +1,7 @@
 //#define DEBUG
-
 #ifdef DEBUG
 	#include <stdio.h>
 #endif
-
-#ifndef _WIN32
-
-#include "engine_win.c"
-
-#else
 
 //these are for a superior platform, i.e linux
 #include "engine.h"
@@ -324,5 +317,3 @@ void schedule_fibres(Fibre *fibre, uint64_t *instructions, uint8_t *heap, struct
     return;
 
 }
-
-#endif
